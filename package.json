@@ -7,8 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "tunnel": "npx localtunnel --port 3000",
-    "tunnel:custom": "npx localtunnel --port 3000 --subdomain"
+    "tunnel": "npx localtunnel --port 3000 --subdomain azf-copilot-main",
+    "tunnel:random": "npx localtunnel --port 3000",
+    "tunnel:backend": "npx localtunnel --port 8000 --subdomain azf-copilot-main-api",
+    "tunnel:backend:random": "npx localtunnel --port 8000"
   },
   "dependencies": {
     "date-fns": "^4.1.0",

@@ -2,6 +2,37 @@
 
 This guide will help you deploy the Next.js app using LocalTunnel for temporary hosting and embed it in a Vite.js iframe.
 
+## ⚡ Quick Start (TL;DR)
+
+If you're getting `ERR_BLOCKED_BY_CLIENT` or `localhost:8000` errors, you need to tunnel your backend API too!
+
+1. **Tunnel your backend API** (port 8000):
+   ```bash
+   npm run tunnel:backend
+   ```
+   This will create: `https://azf-copilot-main-api.loca.lt`
+
+2. **Set environment variable and rebuild**:
+   ```bash
+   export NEXT_PUBLIC_API_URL=https://azf-copilot-main-api.loca.lt
+   npm run build
+   npm start
+   ```
+
+3. **Tunnel your frontend** (port 3000):
+   ```bash
+   npm run tunnel
+   ```
+   This will create: `https://azf-copilot-main.loca.lt`
+
+4. **Keep all 3 processes running:**
+   - Backend server (port 8000)
+   - Backend tunnel
+   - Frontend server (port 3000) 
+   - Frontend tunnel
+
+See detailed steps below for complete instructions.
+
 ## Prerequisites
 
 1. Node.js and npm installed
@@ -28,7 +59,7 @@ npm start
 
 The app will be running at `http://localhost:3000`
 
-### 3. Create LocalTunnel (Option A: Random Subdomain)
+### 3. Create LocalTunnel for Frontend
 
 In a **new terminal window**, run:
 
@@ -38,29 +69,69 @@ npm run tunnel
 
 This will:
 - Create a tunnel on port 3000
-- Generate a random subdomain (e.g., `https://random-name-1234.loca.lt`)
-- Display the public URL you can use
+- Use the custom subdomain: `azf-copilot-main`
+- Create the URL: `https://azf-copilot-main.loca.lt`
 
-**Note:** Copy the HTTPS URL provided (it will look like `https://xxxxx.loca.lt`)
+**Note:** If the subdomain is already taken, you can use `npm run tunnel:random` for a random subdomain.
 
-### 4. Create LocalTunnel (Option B: Custom Subdomain)
+### 5. Tunnel Your Backend API (Required!)
 
-If you want a custom subdomain (if available):
+**CRITICAL:** Your backend API (running on port 8000) also needs to be tunneled because:
+- The frontend is accessed via HTTPS (through tunnel)
+- Browsers block mixed content (HTTP requests from HTTPS pages)
+- `localhost:8000` won't work from the tunneled frontend
+
+In a **third terminal window**, create a tunnel for your backend API:
 
 ```bash
-npx localtunnel --port 3000 --subdomain your-custom-name
+npm run tunnel:backend
 ```
 
-Replace `your-custom-name` with your desired subdomain. This will create a URL like:
-`https://your-custom-name.loca.lt`
+This will create: `https://azf-copilot-main-api.loca.lt`
 
-### 5. Keep Both Processes Running
+**Note:** If the subdomain is already taken, you can use `npm run tunnel:backend:random` for a random subdomain.
 
-**Important:** You need to keep both processes running:
-- Terminal 1: `npm start` (Next.js server)
-- Terminal 2: `npm run tunnel` or the custom tunnel command (LocalTunnel)
+### 6. Configure Frontend to Use Backend Tunnel
 
-If either process stops, the tunnel will break.
+You need to set the `NEXT_PUBLIC_API_URL` environment variable to point to your backend tunnel URL.
+
+**Option A: Set when starting the server**
+
+Stop your current `npm start` process (Ctrl+C) and restart with:
+
+```bash
+NEXT_PUBLIC_API_URL=https://azf-copilot-main-api.loca.lt npm start
+```
+
+**Option B: Create `.env.local` file**
+
+Create a `.env.local` file in the project root:
+
+```
+NEXT_PUBLIC_API_URL=https://azf-copilot-main-api.loca.lt
+```
+
+Then rebuild and restart:
+```bash
+npm run build
+npm start
+```
+
+**Important:** Environment variables starting with `NEXT_PUBLIC_` are embedded at build time. If you change the `.env.local` file, you must rebuild the app.
+
+**Your URLs will be:**
+- Frontend: `https://azf-copilot-main.loca.lt`
+- Backend API: `https://azf-copilot-main-api.loca.lt`
+
+### 7. Keep All Processes Running
+
+**Important:** You need to keep **four processes** running:
+- Terminal 1: Backend server (your API server on port 8000)
+- Terminal 2: `npm run tunnel:backend` (Backend API tunnel → `https://azf-copilot-main-api.loca.lt`)
+- Terminal 3: `npm start` (Next.js server on port 3000)
+- Terminal 4: `npm run tunnel` (Frontend tunnel → `https://azf-copilot-main.loca.lt`)
+
+If any process stops, the setup will break.
 
 ## Embedding in Vite.js App
 
@@ -70,7 +141,7 @@ In your Vite.js app, embed the app using an iframe:
 
 ```html
 <iframe 
-  src="https://your-tunnel-url.loca.lt" 
+  src="https://azf-copilot-main.loca.lt" 
   width="100%" 
   height="100%"
   frameborder="0"
@@ -84,7 +155,7 @@ Or in a React/Vue component:
 ```jsx
 // React example
 <iframe 
-  src="https://your-tunnel-url.loca.lt" 
+  src="https://azf-copilot-main.loca.lt" 
   style={{ width: '100%', height: '100%', border: 'none' }}
   allow="clipboard-read; clipboard-write"
 />
@@ -92,16 +163,31 @@ Or in a React/Vue component:
 
 ### Environment Variables
 
-If your Next.js app needs to connect to a backend API, make sure to set the `NEXT_PUBLIC_API_URL` environment variable:
+The app uses `NEXT_PUBLIC_API_URL` to connect to your backend API. This must be set to your **backend tunnel URL** (not localhost).
+
+**Important:** Since `NEXT_PUBLIC_*` variables are embedded at build time, you must rebuild after changing them:
 
 ```bash
-NEXT_PUBLIC_API_URL=https://your-backend-api.com npm start
+# Set the environment variable
+export NEXT_PUBLIC_API_URL=https://azf-copilot-main-api.loca.lt
+
+# Rebuild the app
+npm run build
+
+# Start the server
+npm start
 ```
 
-Or create a `.env.local` file:
+Or create/update `.env.local`:
 
 ```
-NEXT_PUBLIC_API_URL=https://your-backend-api.com
+NEXT_PUBLIC_API_URL=https://azf-copilot-main-api.loca.lt
+```
+
+Then rebuild and start:
+```bash
+npm run build
+npm start
 ```
 
 ## Important Notes
@@ -133,10 +219,13 @@ The app has been configured with:
    - Check browser console for CORS errors
    - Ensure both processes (Next.js and tunnel) are running
 
-3. **API calls failing?**
-   - Verify `NEXT_PUBLIC_API_URL` is set correctly
-   - Check if the backend API allows requests from the tunnel domain
-   - Ensure the backend has CORS configured to accept requests from `*.loca.lt`
+3. **API calls failing with `ERR_BLOCKED_BY_CLIENT` or `localhost:8000` errors?**
+   - ✅ **You MUST tunnel your backend API** (port 8000) separately
+   - ✅ Set `NEXT_PUBLIC_API_URL` to your backend tunnel URL (HTTPS, not localhost)
+   - ✅ Rebuild the app after setting the environment variable: `npm run build`
+   - ✅ Verify the backend tunnel is running and accessible
+   - ✅ Check if the backend API has CORS configured to accept requests from `*.loca.lt`
+   - ✅ Make sure you're using HTTPS URLs (not HTTP) for the backend tunnel
 
 4. **Connection timeout?**
    - LocalTunnel free tier may have connection limits
@@ -184,8 +273,11 @@ npm install -g pm2
 # Start Next.js with PM2
 pm2 start npm --name "nextjs" -- start
 
-# Start tunnel with PM2
-pm2 start "npx localtunnel --port 3000" --name "tunnel"
+# Start frontend tunnel with PM2
+pm2 start "npx localtunnel --port 3000 --subdomain azf-copilot-main" --name "tunnel"
+
+# Start backend tunnel with PM2
+pm2 start "npx localtunnel --port 8000 --subdomain azf-copilot-main-api" --name "tunnel-backend"
 
 # View logs
 pm2 logs
