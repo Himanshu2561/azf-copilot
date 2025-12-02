@@ -9,7 +9,7 @@ interface MarkdownRendererProps {
 }
 
 export default function MarkdownRenderer({ content, isUser = false }: MarkdownRendererProps) {
-  const textColor = isUser ? 'text-white' : 'text-gray-900';
+  const textColor = isUser ? 'text-gray-900' : 'text-gray-900';
   const linkColor = isUser ? 'text-blue-200 hover:text-blue-100' : 'text-blue-600 hover:text-blue-700';
   const codeBg = isUser ? 'bg-blue-500/30' : 'bg-gray-100';
   const codeTextColor = isUser ? 'text-blue-100' : 'text-gray-800';
@@ -18,7 +18,7 @@ export default function MarkdownRenderer({ content, isUser = false }: MarkdownRe
   const blockquoteBg = isUser ? 'bg-blue-500/10' : 'bg-gray-50';
 
   return (
-    <div className={`markdown-content ${textColor} text-xs sm:text-sm leading-relaxed`}>
+    <div className={`markdown-content ${textColor} text-xs sm:text-sm leading-relaxed wrap-break-word`} style={{ overflowWrap: 'anywhere' }}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -44,13 +44,13 @@ export default function MarkdownRenderer({ content, isUser = false }: MarkdownRe
 
         // Paragraphs
         p: ({ ...props }) => (
-          <p className="mb-2 last:mb-0 wrap-break-word" {...props} />
+          <p className="mb-2 last:mb-0 wrap-break-word" style={{ overflowWrap: 'anywhere' }} {...props} />
         ),
 
         // Links
         a: ({ ...props }) => (
           <a
-            className={`${linkColor} underline underline-offset-2 transition-colors`}
+            className={`${linkColor} underline underline-offset-2 transition-colors break-all`}
             target="_blank"
             rel="noopener noreferrer"
             {...props}
@@ -59,13 +59,13 @@ export default function MarkdownRenderer({ content, isUser = false }: MarkdownRe
 
         // Lists
         ul: ({ ...props }) => (
-          <ul className="list-disc list-inside mb-2 space-y-1 ml-2" {...props} />
+          <ul className="list-disc list-outside mb-2 space-y-1 ml-4" {...props} />
         ),
         ol: ({ ...props }) => (
-          <ol className="list-decimal list-inside mb-2 space-y-1 ml-2" {...props} />
+          <ol className="list-decimal list-outside mb-2 space-y-1 ml-4" {...props} />
         ),
         li: ({ ...props }) => (
-          <li className="pl-1" {...props} />
+          <li className="pl-2 wrap-break-word" style={{ overflowWrap: 'anywhere' }} {...props} />
         ),
 
         // Code blocks
@@ -84,7 +84,7 @@ export default function MarkdownRenderer({ content, isUser = false }: MarkdownRe
           }
           return (
             <code
-              className={`block ${codeBg} ${codeTextColor} p-2.5 rounded-md text-[0.85em] font-mono overflow-x-auto mb-2 ${borderColor} border`}
+              className={`block ${codeBg} ${codeTextColor} p-2.5 rounded-md text-[0.85em] font-mono overflow-x-auto mb-2 ${borderColor} border scrollbar-hide`}
               {...rest}
             >
               {children}
@@ -92,7 +92,7 @@ export default function MarkdownRenderer({ content, isUser = false }: MarkdownRe
           );
         },
         pre: ({ ...props }) => (
-          <pre className="mb-2 overflow-x-auto" {...props} />
+          <pre className="mb-2 overflow-x-auto scrollbar-hide" {...props} />
         ),
 
         // Blockquotes
@@ -110,7 +110,7 @@ export default function MarkdownRenderer({ content, isUser = false }: MarkdownRe
 
         // Tables (from remark-gfm)
         table: ({ ...props }) => (
-          <div className="overflow-x-auto my-2">
+          <div className="overflow-x-auto my-2 scrollbar-hide">
             <table className={`min-w-full border-collapse ${borderColor} border rounded-md`} {...props} />
           </div>
         ),

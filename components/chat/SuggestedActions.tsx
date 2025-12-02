@@ -20,14 +20,39 @@ export default function SuggestedActions({ actions }: SuggestedActionsProps) {
   if (!actions || actions.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 mt-3 mb-2">
-      {actions.map((action, index) => (
+    <div className="mt-3 mb-2">
+      <div
+        style={{
+          color: '#6A7282',
+          fontSize: '12px',
+          fontStyle: 'normal',
+          fontWeight: 400,
+          lineHeight: '16px',
+          marginBottom: '8px'
+        }}
+      >
+        Quick questions:
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {actions.map((action, index) => (
         <button
           key={index}
           onClick={() => handleActionClick(action.value)}
           disabled={isLoading}
-          className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-xs sm:text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200 touch-manipulation"
-          style={{ color: '#1F2937', minHeight: '36px' }}
+          className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
+          style={{
+            borderRadius: '33554400px',
+            border: '1px solid rgba(174, 7, 117, 0.30)',
+            background: '#FFF',
+            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.10), 0 1px 2px -1px rgba(0, 0, 0, 0.10)',
+            color: '#7A1959',
+            textAlign: 'center',
+            fontSize: '11px',
+            fontStyle: 'normal',
+            fontWeight: 400,
+            lineHeight: '16px',
+            minHeight: '36px'
+          }}
         >
           {action.image && (
             <Image
@@ -35,13 +60,14 @@ export default function SuggestedActions({ actions }: SuggestedActionsProps) {
               alt={action.title}
               width={14}
               height={14}
-              className="object-contain sm:w-4 sm:h-4 flex-shrink-0"
+              className="object-contain sm:w-4 sm:h-4 shrink-0"
               unoptimized
             />
           )}
           <span className="whitespace-nowrap">{action.title}</span>
         </button>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

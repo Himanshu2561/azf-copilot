@@ -7,10 +7,12 @@ import MessageBubble from './MessageBubble';
 import HeroCard from './HeroCard';
 import AdaptiveCard from './AdaptiveCard';
 import ReceiptCard from './ReceiptCard';
+import ContactCard from './ContactCard';
 import SuggestedActions from './SuggestedActions';
 import EventCarousel from './EventCarousel';
 import NewsCarousel from './NewsCarousel';
 import CitationsDropdown from './CitationsDropdown';
+import type { Attachment } from '@/lib/api/chat';
 
 export default function MessageList() {
   const messages = useChatStore((state) => state.messages);
@@ -25,13 +27,64 @@ export default function MessageList() {
     scrollToBottom();
   }, [messages, isTyping]);
 
+  // Check if attachments contain contact information
+  const isContactCard = (attachments: Attachment[]): boolean => {
+    console.log('[MessageList] Checking attachments for contact card:', attachments);
+    
+    if (!attachments || attachments.length === 0) {
+      console.log('[MessageList] No attachments found');
+      return false;
+    }
+    
+    const contactKeywords = ['contact number', 'phone', 'email', 'location', 'website'];
+    let contactCardCount = 0;
+
+    attachments.forEach((attachment, index) => {
+      console.log(`[MessageList] Processing attachment ${index}:`, {
+        contentType: attachment.contentType,
+        hasContent: !!attachment.content,
+        hasBody: !!attachment.content?.body
+      });
+
+      if (
+        attachment.contentType === 'application/vnd.microsoft.card.adaptive' &&
+        attachment.content?.body
+      ) {
+        const body = attachment.content.body;
+        console.log(`[MessageList] Adaptive card ${index} body:`, JSON.stringify(body, null, 2));
+        
+        const hasContactKeyword = body.some((item: any) => {
+          const isBolder = item.type === 'TextBlock' && (item.weight === 'Bolder' || item.weight === 'bolder');
+          if (isBolder) {
+            const text = item.text?.toLowerCase() || '';
+            const matches = contactKeywords.some(keyword => text.includes(keyword));
+            console.log(`[MessageList] TextBlock found - text: "${item.text}", weight: "${item.weight}", matches: ${matches}`);
+            return matches;
+          }
+          return false;
+        });
+
+        if (hasContactKeyword) {
+          contactCardCount++;
+          console.log(`[MessageList] Found contact keyword in attachment ${index}, count: ${contactCardCount}`);
+        }
+      }
+    });
+
+    const isContact = contactCardCount >= 2;
+    console.log(`[MessageList] Final check - contactCardCount: ${contactCardCount}, isContactCard: ${isContact}`);
+    
+    // If we have 2+ adaptive cards with contact keywords, treat as contact card
+    return isContact;
+  };
+
   return (
-    <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6 space-y-2 min-h-0">
+    <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6 space-y-2 min-h-0 scrollbar-hide">
       {messages.length === 0 && (
         <div className="flex flex-col items-center justify-center h-full text-center px-3 sm:px-4">
           <div 
             className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 p-4 sm:p-6"
-            style={{ background: 'linear-gradient(180deg, #AE0775 0%, #023D82 100%)' }}
+            style={{ background: '#AE0775' }}
           >
             <Image
               src="/aspire_logo.png"
@@ -62,60 +115,71 @@ export default function MessageList() {
           {/* Render attachments */}
           {message.attachments && message.attachments.length > 0 && (
             <div className="mb-4 ml-8 sm:ml-10">
-              {message.attachments.map((attachment, index) => {
-                // Handle hero cards
-                if (attachment.contentType === 'application/vnd.microsoft.card.hero' && attachment.content) {
-                  return (
-                    <HeroCard key={index} content={attachment.content} />
-                  );
-                }
-                // Handle adaptive cards
-                if (attachment.contentType === 'application/vnd.microsoft.card.adaptive' && attachment.content) {
-                  return (
-                    <AdaptiveCard key={index} content={attachment.content} />
-                  );
-                }
-                // Handle receipt cards
-                if (attachment.contentType === 'application/vnd.microsoft.card.receipt' && attachment.content) {
-                  return (
-                    <ReceiptCard key={index} content={attachment.content} />
-                  );
-                }
-                // Handle other attachments (images, PDFs, etc.)
-                if (attachment.contentUrl) {
-                  if (attachment.contentType?.startsWith('image/')) {
-                    return (
-                      <div key={index} className="my-2">
-                        <Image
-                          src={attachment.contentUrl}
-                          alt={attachment.name || 'Attachment'}
-                          width={400}
-                          height={300}
-                          className="rounded-lg object-cover max-w-full"
-                          unoptimized
-                        />
-                      </div>
-                    );
-                  } else {
-                    return (
-                      <div key={index} className="my-2">
-                        <a
-                          href={attachment.contentUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                          </svg>
-                          {attachment.name || 'View Attachment'}
-                        </a>
-                      </div>
-                    );
-                  }
-                }
-                return null;
-              })}
+              {/* Check if this is a contact card */}
+              {(() => {
+                const isContact = isContactCard(message.attachments);
+                console.log(`[MessageList] Rendering attachments for message ${message.id}, isContactCard: ${isContact}`);
+                return isContact ? (
+                  <ContactCard attachments={message.attachments} />
+                ) : (
+                  <>
+                    {message.attachments.map((attachment, index) => {
+                      // Handle hero cards
+                      if (attachment.contentType === 'application/vnd.microsoft.card.hero' && attachment.content) {
+                        return (
+                          <HeroCard key={index} content={attachment.content} />
+                        );
+                      }
+                      // Handle adaptive cards
+                      if (attachment.contentType === 'application/vnd.microsoft.card.adaptive' && attachment.content) {
+                        return (
+                          <AdaptiveCard key={index} content={attachment.content} />
+                        );
+                      }
+                      // Handle receipt cards
+                      if (attachment.contentType === 'application/vnd.microsoft.card.receipt' && attachment.content) {
+                        return (
+                          <ReceiptCard key={index} content={attachment.content} />
+                        );
+                      }
+                      // Handle other attachments (images, PDFs, etc.)
+                      if (attachment.contentUrl) {
+                        if (attachment.contentType?.startsWith('image/')) {
+                          return (
+                            <div key={index} className="my-2">
+                              <Image
+                                src={attachment.contentUrl}
+                                alt={attachment.name || 'Attachment'}
+                                width={400}
+                                height={300}
+                                className="rounded-lg object-cover max-w-full"
+                                unoptimized
+                              />
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div key={index} className="my-2">
+                              <a
+                                href={attachment.contentUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium transition-colors"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                </svg>
+                                {attachment.name || 'View Attachment'}
+                              </a>
+                            </div>
+                          );
+                        }
+                      }
+                      return null;
+                    })}
+                  </>
+                );
+              })()}
             </div>
           )}
 

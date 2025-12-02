@@ -38,13 +38,13 @@ export default function ChatContainer() {
       {/* Header */}
       <div 
         className="px-3 sm:px-4 py-3 sm:py-4 shadow-sm shrink-0"
-        style={{ background: 'linear-gradient(180deg, #AE0775 0%, #023D82 100%)' }}
+        style={{ background: '#AE0775' }}
       >
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <div 
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0"
-              style={{ background: 'linear-gradient(180deg, #AE0775 0%, #7A1959 100%)' }}
+              className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center overflow-hidden shrink-0"
+              style={{ background: 'rgba(255, 255, 255, 0.20)', borderRadius: '10px' }}
             >
               <Image
                 src="/aspire_logo.png"

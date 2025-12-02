@@ -111,7 +111,7 @@ export default function InputArea() {
           disabled={isLoading}
         />
 
-        <div className="flex-1 relative min-w-0">
+        <div className="flex-1 relative min-w-0 flex items-center">
           <textarea
             ref={textareaRef}
             value={input}
@@ -120,7 +120,7 @@ export default function InputArea() {
             placeholder="Type your message..."
             disabled={isLoading}
             rows={1}
-            className="w-full px-3 py-2.5 sm:px-4 sm:py-3 pr-10 sm:pr-12 rounded-2xl border border-gray-300 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-gray-500 text-sm sm:text-base"
+            className="w-full px-3 py-2.5 sm:px-4 sm:py-3 pr-10 sm:pr-12 rounded-2xl border border-gray-300 bg-gray-50 focus:outline-none resize-none disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-gray-500 text-sm sm:text-base scrollbar-hide"
             style={{ 
               minHeight: '40px', 
               maxHeight: '120px',
@@ -152,11 +152,6 @@ export default function InputArea() {
           )}
         </button>
       </div>
-      {isLoading && (
-        <p className="text-xs text-center mt-1.5 sm:mt-2" style={{ color: '#6B7280' }}>
-          Sending message...
-        </p>
-      )}
     </div>
   );
 }
