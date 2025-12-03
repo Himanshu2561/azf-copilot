@@ -210,7 +210,7 @@ export default function Carousel({ children, className = '' }: CarouselProps) {
                 e.stopPropagation();
                 goToPrev();
               }}
-              className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#FFFFFFE5] backdrop-blur-sm shadow-lg flex items-center justify-center transition-all touch-manipulation"
+              className="absolute left-1 sm:left-2 top-[45%] -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#FFFFFFE5] backdrop-blur-sm shadow-lg flex items-center justify-center transition-all touch-manipulation"
               aria-label="Previous"
               style={{
                 opacity: 0.9,
@@ -240,7 +240,7 @@ export default function Carousel({ children, className = '' }: CarouselProps) {
                 e.stopPropagation();
                 goToNext();
               }}
-              className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#FFFFFFE5] backdrop-blur-sm shadow-lg flex items-center justify-center transition-all touch-manipulation"
+              className="absolute right-1 sm:right-2 top-[45%] -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#FFFFFFE5] backdrop-blur-sm shadow-lg flex items-center justify-center transition-all touch-manipulation"
               aria-label="Next"
               style={{
                 opacity: 0.9,

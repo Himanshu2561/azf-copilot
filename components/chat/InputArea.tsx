@@ -6,37 +6,38 @@ import { useChatStore } from '@/store/chatStore';
 
 export default function InputArea() {
   const [input, setInput] = useState('');
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  // const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const sendMessage = useChatStore((state) => state.sendMessage);
   const isLoading = useChatStore((state) => state.isLoading);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSend = async () => {
     const trimmedInput = input.trim();
-    if ((!trimmedInput && selectedFiles.length === 0) || isLoading) return;
+    if (!trimmedInput || isLoading) return;
 
     const messageText = trimmedInput || '';
-    const filesToSend = [...selectedFiles];
+    // const filesToSend = [...selectedFiles];
     
     setInput('');
-    setSelectedFiles([]);
+    // setSelectedFiles([]);
     
-    await sendMessage(messageText, filesToSend.length > 0 ? filesToSend : undefined);
+    await sendMessage(messageText, undefined);
+    // await sendMessage(messageText, filesToSend.length > 0 ? filesToSend : undefined);
   };
 
-  const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setSelectedFiles((prev) => [...prev, ...files]);
-    // Reset input to allow selecting the same file again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
+  // const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const files = Array.from(e.target.files || []);
+  //   setSelectedFiles((prev) => [...prev, ...files]);
+  //   // Reset input to allow selecting the same file again
+  //   if (fileInputRef.current) {
+  //     fileInputRef.current.value = '';
+  //   }
+  // };
 
-  const removeFile = (index: number) => {
-    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
-  };
+  // const removeFile = (index: number) => {
+  //   setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  // };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -56,7 +57,7 @@ export default function InputArea() {
   return (
     <div className="border-t border-gray-200 p-3 sm:p-4 shrink-0" style={{ background: '#FFFFFF' }}>
       {/* Selected Files Preview */}
-      {selectedFiles.length > 0 && (
+      {/* {selectedFiles.length > 0 && (
         <div className="max-w-4xl mx-auto mb-2 flex flex-wrap gap-2">
           {selectedFiles.map((file, index) => (
             <div
@@ -81,11 +82,11 @@ export default function InputArea() {
             </div>
           ))}
         </div>
-      )}
+      )} */}
 
       <div className="flex items-end gap-1.5 sm:gap-2 max-w-4xl mx-auto">
         {/* Paperclip Icon */}
-        <button
+        {/* <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors touch-manipulation"
@@ -109,7 +110,7 @@ export default function InputArea() {
           onChange={handleFileSelect}
           className="hidden"
           disabled={isLoading}
-        />
+        /> */}
 
         <div className="flex-1 relative min-w-0 flex items-center">
           <textarea
@@ -131,9 +132,15 @@ export default function InputArea() {
         </div>
         <button
           onClick={handleSend}
-          disabled={(!input.trim() && selectedFiles.length === 0) || isLoading}
-          className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full disabled:opacity-50 disabled:cursor-not-allowed text-white flex items-center justify-center transition-opacity shadow-sm touch-manipulation"
-          style={{ background: 'linear-gradient(180deg, #AE0775 0%, #023D82 100%)', minHeight: '40px', minWidth: '40px' }}
+          disabled={!input.trim() || isLoading}
+          className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 disabled:cursor-not-allowed text-white flex items-center justify-center transition-opacity shadow-sm touch-manipulation"
+          style={{ 
+            borderRadius: '10px',
+            opacity: 0.5,
+            background: '#AE0775',
+            minHeight: '40px', 
+            minWidth: '40px' 
+          }}
           aria-label="Send message"
         >
           {isLoading ? (
