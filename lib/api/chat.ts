@@ -1,11 +1,26 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export interface ChatMessage {
-  type: 'message';
+  type: "message";
   text: string;
+  activity_id: string;
   attachments: Attachment[];
   suggested_actions: SuggestedAction[];
   secondary_output?: SecondaryOutput | null;
+}
+
+// Feedback types
+export interface FeedbackRequest {
+  conversation_id: string;
+  activity_id: string;
+  reaction: "like" | "dislike";
+  feedback_text?: string;
+}
+
+export interface FeedbackResponse {
+  success: boolean;
+  message: string;
+  error: string | null;
 }
 
 export interface Citation {
@@ -20,7 +35,7 @@ export interface SecondaryOutput {
 }
 
 export interface Attachment {
-  contentType: string;  // e.g., "image/png", "application/pdf", "application/vnd.microsoft.card.hero"
+  contentType: string; // e.g., "image/png", "application/pdf", "application/vnd.microsoft.card.hero"
   content?: HeroCardContent | AdaptiveCardContent | ReceiptCardContent | any;
   contentUrl?: string | null;
   name?: string | null;
@@ -61,7 +76,7 @@ export interface ReceiptCardContent {
 }
 
 export interface SuggestedAction {
-  type: string;  // e.g., "imBack", "postBack"
+  type: string; // e.g., "imBack", "postBack"
   title: string;
   value: string;
   image?: string | null;
@@ -72,7 +87,7 @@ export interface NewsItem {
   news_link: string;
   news_image_url: string;
   news_summary: string;
-  news_date: string;  // Format: "YYYY-MM-DD" or "DD MMM YYYY"
+  news_date: string; // Format: "YYYY-MM-DD" or "DD MMM YYYY"
   news_category?: string;
 }
 
@@ -81,7 +96,7 @@ export interface EventItem {
   event_link: string;
   event_image_url: string;
   event_summary: string;
-  event_date: string;  // Format: "YYYY-MM-DD"
+  event_date: string; // Format: "YYYY-MM-DD"
   event_location: string;
   is_upcoming?: boolean;
 }
@@ -99,26 +114,34 @@ export interface ChatRequest {
 }
 
 export const chatApi = {
-  async sendMessage(message: string, conversationId?: string, files?: File[]): Promise<ChatResponse> {
+  async sendMessage(
+    message: string,
+    conversationId?: string,
+    files?: File[]
+  ): Promise<ChatResponse> {
     // Use multipart/form-data if files are provided, otherwise use JSON
     if (files && files.length > 0) {
       const formData = new FormData();
-      formData.append('message', message);
+      formData.append("message", message);
       if (conversationId) {
-        formData.append('conversation_id', conversationId);
+        formData.append("conversation_id", conversationId);
       }
       files.forEach((file) => {
-        formData.append('files', file);
+        formData.append("files", file);
       });
 
       const response = await fetch(`${API_BASE_URL}/chat`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Network error' }));
-        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+        const errorData = await response
+          .json()
+          .catch(() => ({ detail: "Network error" }));
+        throw new Error(
+          errorData.detail || `HTTP error! status: ${response.status}`
+        );
       }
 
       return response.json();
@@ -132,28 +155,72 @@ export const chatApi = {
       }
 
       const response = await fetch(`${API_BASE_URL}/chat`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ detail: 'Network error' }));
-        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+        const errorData = await response
+          .json()
+          .catch(() => ({ detail: "Network error" }));
+        throw new Error(
+          errorData.detail || `HTTP error! status: ${response.status}`
+        );
       }
 
       return response.json();
     }
   },
 
-  async checkHealth(): Promise<{ status: string; agent: string; environment: string; api: string }> {
+  async checkHealth(): Promise<{
+    status: string;
+    agent: string;
+    environment: string;
+    api: string;
+  }> {
     const response = await fetch(`${API_BASE_URL}/health`);
     if (!response.ok) {
-      throw new Error('Health check failed');
+      throw new Error("Health check failed");
     }
     return response.json();
   },
-};
 
+  async submitFeedback(
+    conversationId: string,
+    activityId: string,
+    reaction: "like" | "dislike",
+    feedbackText?: string
+  ): Promise<FeedbackResponse> {
+    const payload: FeedbackRequest = {
+      conversation_id: conversationId,
+      activity_id: activityId,
+      reaction,
+    };
+
+    if (feedbackText?.trim()) {
+      payload.feedback_text = feedbackText.trim();
+    }
+
+    const response = await fetch(`${API_BASE_URL}/feedback`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response
+        .json()
+        .catch(() => ({ detail: "Failed to submit feedback" }));
+      throw new Error(
+        errorData.detail || `HTTP error! status: ${response.status}`
+      );
+    }
+
+    return response.json();
+  },
+};

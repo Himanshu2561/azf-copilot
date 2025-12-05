@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Message } from '@/store/chatStore';
 import { format } from 'date-fns';
 import MarkdownRenderer from './MarkdownRenderer';
+import FeedbackButtons from './FeedbackButtons';
 
 interface MessageBubbleProps {
   message: Message;
@@ -11,6 +12,7 @@ interface MessageBubbleProps {
 
 export default function MessageBubble({ message }: MessageBubbleProps) {
   const isUser = message.sender === 'user';
+  const showFeedback = !isUser && message.activityId;
 
   return (
     <div
@@ -36,11 +38,10 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         {/* Message Content */}
         <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} min-w-0 flex-1`}>
           <div
-            className={`px-3 py-2 sm:px-4 sm:py-2.5 wrap-break-word overflow-hidden ${
-              isUser
+            className={`px-3 py-2 sm:px-4 sm:py-2.5 wrap-break-word overflow-hidden ${isUser
                 ? 'rounded-br-sm'
                 : 'rounded-bl-sm'
-            }`}
+              }`}
             style={{
               borderRadius: '16px',
               background: '#FFF',
@@ -55,6 +56,14 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
               {format(message.timestamp, 'HH:mm')}
             </span>
           </div>
+
+          {/* Feedback buttons for bot messages */}
+          {showFeedback && (
+            <FeedbackButtons
+              messageId={message.id}
+              feedbackState={message.feedbackState}
+            />
+          )}
         </div>
       </div>
     </div>
