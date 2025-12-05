@@ -178,9 +178,6 @@ export default function ContactCard({ attachments }: ContactCardProps) {
         <h3 className="text-lg sm:text-xl font-semibold text-white mb-1">
           Contact Aspire Zone
         </h3>
-        <p className="text-sm sm:text-base text-white/90">
-          We're here to help you
-        </p>
       </div>
 
       {/* Contact Information */}
